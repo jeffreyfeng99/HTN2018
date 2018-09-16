@@ -7,7 +7,8 @@ import json
 import pyrebase
 import fuzzyset
 import sys
-#https://github.com/googlemaps/google-maps-services-python for installation (pip install -U googlemaps)
+
+
 #pip install python-google-places
 #from googleplaces import GooglePlaces, types, lang
 # YOUR_API_KEY = ''
@@ -174,19 +175,19 @@ def reply(user):
         index+=1
         if(index==4):
             break
-    kik.send_messages([
-            TextMessage(
-                to=user,                 
-                body="The closest clinical facilities are:"
-            )
-        ])
-    for place in query_result.spaces:
-            kik.send_messages([
-                TextMessage(
-                    to=user,                 
-                    body= place.name + "," place.geo_location + "," place.place_id
-                )
-            ])
+    # kik.send_messages([
+    #         TextMessage(
+    #             to=user,                 
+    #             body="The closest clinical facilities are:"
+    #         )
+    #     ])
+    # for place in query_result.places:
+    #         kik.send_messages([
+    #             TextMessage(
+    #                 to=user,                 
+    #                 body= place.name + "," place.geo_location + "," place.place_id
+    #             )
+    #         ])
       
 
 
