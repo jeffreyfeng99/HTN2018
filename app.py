@@ -7,18 +7,16 @@ import json
 import pyrebase
 import fuzzyset
 import sys
-AIzaSyBusndDrJxrEKVnWNpOBo3_LXK_rlrkDvU
+from googleplaces import GooglePlaces, types, lang
+from googlemaps import convert
+import googlemaps
 
-
-
-#pip install python-google-places
-#from googleplaces import GooglePlaces, types, lang
-# YOUR_API_KEY = ''
-
-# google_places = GooglePlaces(YOUR_API_KEY)
-# query_result = google_places.nearby_search(
-#     location='Waterloo, Ontario', keyword='Hospitals',
-#     radius=500)
+google_maps_api = 'AIzaSyBusndDrJxrEKVnWNpOBo3_LXK_rlrkDvU'
+google_places = GooglePlaces(google_maps_api)
+query_result = google_places.nearby_search(
+    location='Waterloo, Ontario', keyword='Hospitals',
+    radius=500)
+gmaps = googlemaps.Client(key=google_maps_api)
 
 config = {
     'apiKey': "AIzaSyBXgZbPWz-YEl4BKZFN3ZiWdNM-syN1qjI",
@@ -29,22 +27,26 @@ config = {
     'messagingSenderId': "469098036102"
 }
 
+# Creating firebase database 
 firebase = pyrebase.initialize_app(config)
 db = firebase.database()
+# Defining data types
 data = {"index": -1,"name":"","gender":"","sympindex":1,"symptom1":0,"symptom2":0,"symptoms":"","year":0}
+# Define settings
 db.child("Users").child("ericawng").set(data)
 
+# uploading to online
 app = Flask(__name__)
+# Mobile app - chatbot
 kik = KikApi('htn2018', '2c9245d3-7101-4565-b6a1-f67212e08433')
-kik.set_configuration(Configuration(webhook='http://a42cefa2.ngrok.io/incoming'))
+kik.set_configuration(Configuration(webhook='http://4a9eb74b.ngrok.io/incoming'))
 
-
+# Defining initiator methods for flask calls
 @app.route('/incoming', methods=['POST'])
 def incoming():
     if not kik.verify_signature(request.headers.get('X-Kik-Signature'),    request.get_data()):
-    	return Response(status=403) 
+        return Response(status=403)
     messages = messages_from_json(request.json['messages'])
-
     for message in messages:
         if isinstance(message, TextMessage):
             user = str(message.from_user)
@@ -124,7 +126,7 @@ def incoming():
 
     return Response(status=200)
 
-
+# Accessing fuzzyset api for Natural Language Processing
 def getid(msgs):
     with open('data.json') as f:
         data = json.load(f)
@@ -144,7 +146,7 @@ def reply(user):
     kik.send_messages([
         TextMessage(
             to=user,                 
-            body="Here are the three most likely problems you may have."
+            body="Here are the conditions you most likely have."
         )
     ])
 
@@ -162,39 +164,42 @@ def reply(user):
 
     result = result.replace("'",'"')
     j = json.loads(result)
-    index = 1
+    if len(j)==0:
+        kik.send_messages([
+            TextMessage(
+                to=user,                 
+                body="Sorry, we don't recognize your condition..."
+            )
+        ])
     for j1 in j:
         name = j1['Issue']['Name']
         profname = j1['Issue']['ProfName']
         accuracy = j1['Issue']['Accuracy']
-
+        print(j1)
         kik.send_messages([
             TextMessage(
                 to=user,                 
-                body="There is a "+str(accuracy)+"% chance that you have "+profname+", more commonly known as "+name
+                body="There is a "+str(int(accuracy))+"% chance that you have "+profname+", more commonly known as "+name
             )
         ])
-        index+=1
-        if(index==4):
-            break
-    # kik.send_messages([
-    #         TextMessage(
-    #             to=user,                 
-    #             body="The closest clinical facilities are:"
-    #         )
-    #     ])
-    # for place in query_result.places:
-    #         kik.send_messages([
-    #             TextMessage(
-    #                 to=user,                 
-    #                 body= place.name + "," place.geo_location + "," place.place_id
-    #             )
-    #         ])
+    kik.send_messages([
+        TextMessage(
+            to=user,                 
+            body="The closest clinical facilities are:"
+        )
+    ])
+    for place in query_result.places:
+        place.get_details()
+        address = gmaps.reverse_geocode((place.geo_location['lat'],place.geo_location['lng']))[0]['formatted_address']
+        kik.send_messages([
+            TextMessage(
+                to=user,                 
+                body= str(place.name)+"\nAddress: "+str(address)+"\nPhone numeber: "+str(place.local_phone_number)
+            )
+        ])
       
-
 
 
 if __name__ == "__main__":
     app.run(port=8080)
 
-    
