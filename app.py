@@ -27,22 +27,26 @@ config = {
     'messagingSenderId': "469098036102"
 }
 
+# Creating firebase database 
 firebase = pyrebase.initialize_app(config)
 db = firebase.database()
+# Defining data types
 data = {"index": -1,"name":"","gender":"","sympindex":1,"symptom1":0,"symptom2":0,"symptoms":"","year":0}
+# Define settings
 db.child("Users").child("ericawng").set(data)
 
+# uploading to online
 app = Flask(__name__)
+# Mobile app - chatbot
 kik = KikApi('htn2018', '2c9245d3-7101-4565-b6a1-f67212e08433')
 kik.set_configuration(Configuration(webhook='http://4a9eb74b.ngrok.io/incoming'))
 
-
+# Defining initiator methods for flask calls
 @app.route('/incoming', methods=['POST'])
 def incoming():
     if not kik.verify_signature(request.headers.get('X-Kik-Signature'),    request.get_data()):
-        return Response(status=403) 
+    	return Response(status=403)
     messages = messages_from_json(request.json['messages'])
-
     for message in messages:
         if isinstance(message, TextMessage):
             user = str(message.from_user)
@@ -122,7 +126,7 @@ def incoming():
 
     return Response(status=200)
 
-
+# Accessing fuzzyset api for Natural Language Processing
 def getid(msgs):
     with open('data.json') as f:
         data = json.load(f)
@@ -200,4 +204,3 @@ def reply(user):
 if __name__ == "__main__":
     app.run(port=8080)
 
-    
