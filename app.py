@@ -17,7 +17,7 @@ config = {
     'messagingSenderId': "469098036102"
 }
 
-# Creating firebase database
+# Creating firebase database 
 firebase = pyrebase.initialize_app(config)
 db = firebase.database()
 # Defining data types
