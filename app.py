@@ -73,7 +73,7 @@ def incoming():
             kik.send_messages([
                 TextMessage(
                     to=user,                 
-                    body='In which year were you born?'
+                    body='In which year were you born ?'
                 )
             ])
             index+=1
