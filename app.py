@@ -8,6 +8,16 @@ import pyrebase
 import fuzzyset
 import sys
 
+
+#pip install python-google-places
+#from googleplaces import GooglePlaces, types, lang
+# YOUR_API_KEY = ''
+
+# google_places = GooglePlaces(YOUR_API_KEY)
+# query_result = google_places.nearby_search(
+#     location='Waterloo, Ontario', keyword='Hospitals',
+#     radius=500)
+
 config = {
     'apiKey': "AIzaSyBXgZbPWz-YEl4BKZFN3ZiWdNM-syN1qjI",
     'authDomain': "htn2018-85959.firebaseapp.com",
@@ -150,6 +160,13 @@ def reply(user):
 
     result = result.replace("'",'"')
     j = json.loads(result)
+    if len(j)==0:
+    kik.send_messages([
+        TextMessage(
+            to=user,                 
+            body="Sorry, we don't recognize your condition..."
+        )
+    ])
     for j1 in j:
         name = j1['Issue']['Name']
         profname = j1['Issue']['ProfName']
@@ -161,14 +178,26 @@ def reply(user):
                 body="There is a "+str(accuracy)+"% chance that you have "+profname+", more commonly known as "+name
             )
         ])
-    if len(j)==0:
-        kik.send_messages([
-            TextMessage(
-                to=user,                 
-                body="Sorry, we don't recognize your condition..."
-            )
-        ])
+        index+=1
+        if(index==4):
+            break
+    # kik.send_messages([
+    #         TextMessage(
+    #             to=user,                 
+    #             body="The closest clinical facilities are:"
+    #         )
+    #     ])
+    # for place in query_result.places:
+    #         kik.send_messages([
+    #             TextMessage(
+    #                 to=user,                 
+    #                 body= place.name + "," place.geo_location + "," place.place_id
+    #             )
+    #         ])
+      
 
 
 if __name__ == "__main__":
     app.run(port=8080)
+
+    
