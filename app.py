@@ -8,12 +8,15 @@ import pyrebase
 import fuzzyset
 import sys
 from googleplaces import GooglePlaces, types, lang
+from googlemaps import convert
+import googlemaps
 
 google_maps_api = 'AIzaSyBusndDrJxrEKVnWNpOBo3_LXK_rlrkDvU'
 google_places = GooglePlaces(google_maps_api)
 query_result = google_places.nearby_search(
     location='Waterloo, Ontario', keyword='Hospitals',
     radius=500)
+gmaps = googlemaps.Client(key=google_maps_api)
 
 config = {
     'apiKey': "AIzaSyBXgZbPWz-YEl4BKZFN3ZiWdNM-syN1qjI",
@@ -143,7 +146,7 @@ def reply(user):
     kik.send_messages([
         TextMessage(
             to=user,                 
-            body="Here are the three most likely conditions you may have."
+            body="Here are the conditions you most likely have."
         )
     ])
 
@@ -176,23 +179,22 @@ def reply(user):
         kik.send_messages([
             TextMessage(
                 to=user,                 
-                body="There is a "+str(accuracy)+"% chance that you have "+profname+", more commonly known as "+name
+                body="There is a "+str(int(accuracy))+"% chance that you have "+profname+", more commonly known as "+name
             )
         ])
-        index+=1
-        if(index==4):
-            break
     kik.send_messages([
-            TextMessage(
-                to=user,                 
-                body="The closest clinical facilities are:"
-            )
-        ])
+        TextMessage(
+            to=user,                 
+            body="The closest clinical facilities are:"
+        )
+    ])
     for place in query_result.places:
+        place.get_details()
+        address = gmaps.reverse_geocode((place.geo_location['lat'],place.geo_location['lng']))[0]['formatted_address']
         kik.send_messages([
             TextMessage(
                 to=user,                 
-                body= place.name+","+place.geo_location+","+place.place_id
+                body= str(place.name)+"\nAddress: "+str(address)+"\nPhone numeber: "+str(place.local_phone_number)
             )
         ])
       
