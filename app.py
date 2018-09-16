@@ -7,16 +7,13 @@ import json
 import pyrebase
 import fuzzyset
 import sys
+from googleplaces import GooglePlaces, types, lang
 
-
-#pip install python-google-places
-#from googleplaces import GooglePlaces, types, lang
-# YOUR_API_KEY = ''
-
-# google_places = GooglePlaces(YOUR_API_KEY)
-# query_result = google_places.nearby_search(
-#     location='Waterloo, Ontario', keyword='Hospitals',
-#     radius=500)
+google_maps_api = 'AIzaSyBusndDrJxrEKVnWNpOBo3_LXK_rlrkDvU'
+google_places = GooglePlaces(google_maps_api)
+query_result = google_places.nearby_search(
+    location='Waterloo, Ontario', keyword='Hospitals',
+    radius=500)
 
 config = {
     'apiKey': "AIzaSyBXgZbPWz-YEl4BKZFN3ZiWdNM-syN1qjI",
@@ -45,7 +42,7 @@ kik.set_configuration(Configuration(webhook='http://4a9eb74b.ngrok.io/incoming')
 @app.route('/incoming', methods=['POST'])
 def incoming():
     if not kik.verify_signature(request.headers.get('X-Kik-Signature'),    request.get_data()):
-    	return Response(status=403)
+        return Response(status=403)
     messages = messages_from_json(request.json['messages'])
     for message in messages:
         if isinstance(message, TextMessage):
@@ -165,12 +162,12 @@ def reply(user):
     result = result.replace("'",'"')
     j = json.loads(result)
     if len(j)==0:
-    kik.send_messages([
-        TextMessage(
-            to=user,                 
-            body="Sorry, we don't recognize your condition..."
-        )
-    ])
+        kik.send_messages([
+            TextMessage(
+                to=user,                 
+                body="Sorry, we don't recognize your condition..."
+            )
+        ])
     for j1 in j:
         name = j1['Issue']['Name']
         profname = j1['Issue']['ProfName']
@@ -185,19 +182,19 @@ def reply(user):
         index+=1
         if(index==4):
             break
-    # kik.send_messages([
-    #         TextMessage(
-    #             to=user,                 
-    #             body="The closest clinical facilities are:"
-    #         )
-    #     ])
-    # for place in query_result.places:
-    #         kik.send_messages([
-    #             TextMessage(
-    #                 to=user,                 
-    #                 body= place.name + "," place.geo_location + "," place.place_id
-    #             )
-    #         ])
+    kik.send_messages([
+            TextMessage(
+                to=user,                 
+                body="The closest clinical facilities are:"
+            )
+        ])
+    for place in query_result.places:
+        kik.send_messages([
+            TextMessage(
+                to=user,                 
+                body= place.name+","+place.geo_location+","+place.place_id
+            )
+        ])
       
 
 
