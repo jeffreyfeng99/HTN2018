@@ -8,6 +8,16 @@ import pyrebase
 import fuzzyset
 import sys
 
+
+#pip install python-google-places
+#from googleplaces import GooglePlaces, types, lang
+# YOUR_API_KEY = ''
+
+# google_places = GooglePlaces(YOUR_API_KEY)
+# query_result = google_places.nearby_search(
+#     location='Waterloo, Ontario', keyword='Hospitals',
+#     radius=500)
+
 config = {
     'apiKey': "AIzaSyBXgZbPWz-YEl4BKZFN3ZiWdNM-syN1qjI",
     'authDomain': "htn2018-85959.firebaseapp.com",
@@ -29,14 +39,13 @@ db.child("Users").child("ericawng").set(data)
 app = Flask(__name__)
 # Mobile app - chatbot
 kik = KikApi('htn2018', '2c9245d3-7101-4565-b6a1-f67212e08433')
-kik.set_configuration(Configuration(webhook='http://776c8815.ngrok.io/incoming'))
+kik.set_configuration(Configuration(webhook='http://4a9eb74b.ngrok.io/incoming'))
 
 # Defining initiator methods for flask calls
 @app.route('/incoming', methods=['POST'])
 def incoming():
     if not kik.verify_signature(request.headers.get('X-Kik-Signature'),    request.get_data()):
     	return Response(status=403)
-
     messages = messages_from_json(request.json['messages'])
     for message in messages:
         if isinstance(message, TextMessage):
@@ -137,7 +146,7 @@ def reply(user):
     kik.send_messages([
         TextMessage(
             to=user,                 
-            body="Here are the three most likely problems you may have."
+            body="Here are the three most likely conditions you may have."
         )
     ])
 
@@ -155,12 +164,18 @@ def reply(user):
 
     result = result.replace("'",'"')
     j = json.loads(result)
-    index = 1
+    if len(j)==0:
+    kik.send_messages([
+        TextMessage(
+            to=user,                 
+            body="Sorry, we don't recognize your condition..."
+        )
+    ])
     for j1 in j:
         name = j1['Issue']['Name']
         profname = j1['Issue']['ProfName']
         accuracy = j1['Issue']['Accuracy']
-
+        print(j1)
         kik.send_messages([
             TextMessage(
                 to=user,                 
@@ -170,7 +185,22 @@ def reply(user):
         index+=1
         if(index==4):
             break
+    # kik.send_messages([
+    #         TextMessage(
+    #             to=user,                 
+    #             body="The closest clinical facilities are:"
+    #         )
+    #     ])
+    # for place in query_result.places:
+    #         kik.send_messages([
+    #             TextMessage(
+    #                 to=user,                 
+    #                 body= place.name + "," place.geo_location + "," place.place_id
+    #             )
+    #         ])
+      
 
 
 if __name__ == "__main__":
     app.run(port=8080)
+
