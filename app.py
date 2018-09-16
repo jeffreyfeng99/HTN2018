@@ -5,6 +5,8 @@ from kik.messages import messages_from_json, TextMessage
 import unirest
 import json
 import pyrebase
+import fuzzyset
+import sys
 
 config = {
     'apiKey': "AIzaSyBXgZbPWz-YEl4BKZFN3ZiWdNM-syN1qjI",
@@ -22,7 +24,7 @@ db.child("Users").child("ericawng").set(data)
 
 app = Flask(__name__)
 kik = KikApi('htn2018', '2c9245d3-7101-4565-b6a1-f67212e08433')
-kik.set_configuration(Configuration(webhook='http://3facc81a.ngrok.io/incoming'))
+kik.set_configuration(Configuration(webhook='http://776c8815.ngrok.io/incoming'))
 
 
 @app.route('/incoming', methods=['POST'])
@@ -112,7 +114,19 @@ def incoming():
 
 
 def getid(msgs):
-    return msgs
+    with open('data.json') as f:
+        data = json.load(f)
+    a = fuzzyset.FuzzySet()
+    a.add(str(msgs))
+    value = sys.maxint
+    id = 0
+    name = ''
+    for dt in data:
+        val = a.get(str(dt['Name']))
+        if(val>value):
+            value = val
+            id = dt['ID']
+    return str(id)
 
 def reply(user):
     kik.send_messages([
@@ -136,6 +150,7 @@ def reply(user):
 
     result = result.replace("'",'"')
     j = json.loads(result)
+    index = 1
     for j1 in j:
         name = j1['Issue']['Name']
         profname = j1['Issue']['ProfName']
@@ -147,6 +162,9 @@ def reply(user):
                 body="There is a "+str(accuracy)+"% chance that you have "+profname+", more commonly known as "+name
             )
         ])
+        index+=1
+        if(index==4):
+            break
 
 
 if __name__ == "__main__":
