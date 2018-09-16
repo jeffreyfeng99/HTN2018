@@ -7,6 +7,8 @@ import json
 import pyrebase
 import fuzzyset
 import sys
+AIzaSyBusndDrJxrEKVnWNpOBo3_LXK_rlrkDvU
+
 
 
 #pip install python-google-places
