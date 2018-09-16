@@ -7,6 +7,15 @@ import json
 import pyrebase
 import fuzzyset
 import sys
+#https://github.com/googlemaps/google-maps-services-python for installation (pip install -U googlemaps)
+#pip install python-google-places
+#from googleplaces import GooglePlaces, types, lang
+# YOUR_API_KEY = ''
+
+# google_places = GooglePlaces(YOUR_API_KEY)
+# query_result = google_places.nearby_search(
+#     location='Waterloo, Ontario', keyword='Hospitals',
+#     radius=500)
 
 config = {
     'apiKey': "AIzaSyBXgZbPWz-YEl4BKZFN3ZiWdNM-syN1qjI",
@@ -24,7 +33,7 @@ db.child("Users").child("ericawng").set(data)
 
 app = Flask(__name__)
 kik = KikApi('htn2018', '2c9245d3-7101-4565-b6a1-f67212e08433')
-kik.set_configuration(Configuration(webhook='http://776c8815.ngrok.io/incoming'))
+kik.set_configuration(Configuration(webhook='http://a42cefa2.ngrok.io/incoming'))
 
 
 @app.route('/incoming', methods=['POST'])
@@ -165,6 +174,21 @@ def reply(user):
         index+=1
         if(index==4):
             break
+    kik.send_messages([
+            TextMessage(
+                to=user,                 
+                body="The closest clinical facilities are:"
+            )
+        ])
+    for place in query_result.spaces:
+            kik.send_messages([
+                TextMessage(
+                    to=user,                 
+                    body= place.name + "," place.geo_location + "," place.place_id
+                )
+            ])
+      
+
 
 
 if __name__ == "__main__":
